@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flappy Bird</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Neon Flappy</title>
 
 <style>
 *{
@@ -18,50 +18,128 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:#111;
+  background:#0f0f1a;
+  overflow:hidden;
 }
 
 /* GAME */
 #game{
-  width:420px;
-  height:90vh;
-  background:url("41524.jpg") center / cover no-repeat;
-  border-radius:22px;
+  width:min(95vw,420px);
+  height:95vh;
+  border-radius:24px;
   position:relative;
   overflow:hidden;
-  box-shadow:0 25px 50px rgba(0,0,0,.5);
+  box-shadow:0 30px 60px rgba(0,0,0,.6);
+  background:linear-gradient(to top,#1e3c72,#2a5298);
+  animation:bgMove 10s linear infinite;
+}
+
+/* Moving sky */
+@keyframes bgMove{
+  0%{background-position:0 0;}
+  100%{background-position:0 600px;}
+}
+
+/* CLOUDS */
+.cloud{
+  position:absolute;
+  width:80px;
+  height:40px;
+  background:white;
+  border-radius:50px;
+  opacity:.8;
+  animation:cloudMove 20s linear infinite;
+}
+
+.cloud::before,
+.cloud::after{
+  content:"";
+  position:absolute;
+  background:white;
+  border-radius:50%;
+}
+
+.cloud::before{
+  width:50px;
+  height:50px;
+  top:-25px;
+  left:10px;
+}
+
+.cloud::after{
+  width:40px;
+  height:40px;
+  top:-15px;
+  left:40px;
+}
+
+@keyframes cloudMove{
+  from{left:100%;}
+  to{left:-100px;}
 }
 
 /* SCORE */
 #score{
   position:absolute;
-  top:16px;
+  top:20px;
   left:50%;
   transform:translateX(-50%);
-  font-size:2.4rem;
+  font-size:2.5rem;
   font-weight:700;
-  color:white;
-  text-shadow:2px 2px 6px rgba(0,0,0,.6);
+  color:#fff;
+  text-shadow:0 0 15px rgba(255,255,255,.8);
   z-index:5;
 }
 
 /* BIRD */
 #bird{
   position:absolute;
-  left:90px;
-  top:40%;
-  width:48px;
-  height:36px;
-  background:url("bird.png") center / contain no-repeat;
-  transition:transform .1s linear;
+  left:22%;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, #fff, #ffcc00);
+  box-shadow:0 0 15px #ffcc00, 0 0 30px #ff8800;
+  transition:transform .08s linear;
+}
+
+/* Eye */
+#bird::after{
+  content:"";
+  position:absolute;
+  width:10px;
+  height:10px;
+  background:black;
+  border-radius:50%;
+  top:12px;
+  right:10px;
+}
+
+/* Wing */
+#bird::before{
+  content:"";
+  position:absolute;
+  width:20px;
+  height:14px;
+  background:#ff9900;
+  border-radius:50%;
+  bottom:5px;
+  left:5px;
+  animation:wing 0.25s infinite alternate;
+}
+
+@keyframes wing{
+  from{transform:rotate(-20deg);}
+  to{transform:rotate(20deg);}
 }
 
 /* PIPES */
 .pipe{
   position:absolute;
-  width:64px;
-  background:linear-gradient(#3ee58b,#1eae5d);
-  border-radius:10px;
+  width:65px;
+  background:linear-gradient(#00ffcc,#009977);
+  border-radius:14px;
+  box-shadow:0 0 15px #00ffcc;
 }
 
 /* GROUND */
@@ -69,15 +147,16 @@ body{
   position:absolute;
   bottom:0;
   width:100%;
-  height:64px;
-  background:url("ground.png") repeat-x bottom;
+  height:70px;
+  background:linear-gradient(#3a2c1a,#24180f);
+  box-shadow:inset 0 5px 10px rgba(0,0,0,.5);
 }
 
 /* OVERLAY */
 #overlay{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.6);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -86,20 +165,32 @@ body{
 }
 
 .overlay-box{
-  background:rgba(255,255,255,.15);
-  padding:28px;
-  border-radius:20px;
+  background:rgba(255,255,255,.1);
+  backdrop-filter:blur(8px);
+  padding:30px;
+  border-radius:22px;
   text-align:center;
+  animation:fadeIn .4s ease;
+}
+
+@keyframes fadeIn{
+  from{transform:scale(.7);opacity:0}
+  to{transform:scale(1);opacity:1}
 }
 
 .overlay-box button{
-  margin-top:16px;
-  padding:10px 26px;
+  margin-top:18px;
+  padding:12px 32px;
   border:none;
-  border-radius:30px;
-  background:#ffcc00;
-  font-weight:600;
+  border-radius:40px;
+  background:#00ffcc;
+  font-weight:700;
   cursor:pointer;
+  transition:.2s;
+}
+
+.overlay-box button:active{
+  transform:scale(.9);
 }
 </style>
 </head>
@@ -107,14 +198,18 @@ body{
 <body>
 
 <div id="game">
+  <div class="cloud" style="top:60px; animation-delay:0s;"></div>
+  <div class="cloud" style="top:150px; animation-delay:5s;"></div>
+  <div class="cloud" style="top:250px; animation-delay:10s;"></div>
+
   <div id="score">0</div>
   <div id="bird"></div>
   <div id="ground"></div>
 
   <div id="overlay">
     <div class="overlay-box">
-      <h1>Flappy Bird</h1>
-      <p>Press Space or ↑</p>
+      <h1>Neon Flappy</h1>
+      <p>Tap Anywhere or Press Space / ↑</p>
       <button onclick="startGame()">Start</button>
     </div>
   </div>
@@ -128,13 +223,13 @@ const overlay = document.getElementById("overlay");
 
 let birdY = 200;
 let velocity = 0;
-let gravity = 0.45;
+let gravity = 0.5;
 let pipes = [];
 let score = 0;
 let running = false;
 
 function startGame(){
-  overlay.style.display="none";
+  overlay.style.display = "none";
   birdY = game.clientHeight / 2;
   velocity = 0;
   score = 0;
@@ -146,72 +241,81 @@ function startGame(){
 
 function flap(){
   if(!running) return;
-  velocity = -7;
+  velocity = -8;
 }
 
 document.addEventListener("keydown", e=>{
-  if(e.code==="Space" || e.code==="ArrowUp"){
+  if(e.code === "Space" || e.code === "ArrowUp"){
     e.preventDefault();
     flap();
   }
 });
 
+game.addEventListener("touchstart", flap);
+game.addEventListener("click", flap);
+
 function createPipe(){
-  const gap = 150;
-  const topH = Math.random()*220+40;
-  const bottomH = game.clientHeight - topH - gap - 64;
+  const gap = 160;
+  const topH = Math.random() * 220 + 50;
+  const bottomH = game.clientHeight - topH - gap - 70;
 
   const top = document.createElement("div");
-  top.className="pipe";
-  top.style.height=topH+"px";
-  top.style.top=0;
-  top.style.left=game.clientWidth+"px";
+  top.className = "pipe";
+  top.style.height = topH + "px";
+  top.style.top = "0px";
+  top.style.left = game.clientWidth + "px";
 
   const bottom = document.createElement("div");
-  bottom.className="pipe";
-  bottom.style.height=bottomH+"px";
-  bottom.style.bottom="64px";
-  bottom.style.left=game.clientWidth+"px";
+  bottom.className = "pipe";
+  bottom.style.height = bottomH + "px";
+  bottom.style.bottom = "70px";
+  bottom.style.left = game.clientWidth + "px";
 
-  game.append(top,bottom);
-  pipes.push({top,bottom,passed:false});
+  game.append(top, bottom);
+  pipes.push({top, bottom, passed:false});
 }
 
-setInterval(()=>{ if(running) createPipe(); },1400);
+setInterval(() => { if(running) createPipe(); }, 1500);
 
 function loop(){
-  if(!running) return requestAnimationFrame(loop);
+  if(!running){
+    requestAnimationFrame(loop);
+    return;
+  }
 
   velocity += gravity;
   birdY += velocity;
-  bird.style.top = birdY+"px";
-  bird.style.transform = `rotate(${velocity*5}deg)`;
+  bird.style.top = birdY + "px";
+  bird.style.transform = `rotate(${velocity*4}deg)`;
 
   pipes.forEach(p=>{
-    let x = p.top.offsetLeft - 2.5;
-    p.top.style.left = x+"px";
-    p.bottom.style.left = x+"px";
+    let x = p.top.offsetLeft - 3;
+    p.top.style.left = x + "px";
+    p.bottom.style.left = x + "px";
 
-    if(!p.passed && x < 90){
+    if(!p.passed && x < game.clientWidth * 0.22){
       p.passed = true;
       score++;
       scoreEl.textContent = score;
     }
 
     if(
-      x < 138 && x+64 > 90 &&
+      x < game.clientWidth*0.22+42 && x+65 > game.clientWidth*0.22 &&
       (birdY < p.top.offsetHeight ||
-      birdY+36 > game.clientHeight - p.bottom.offsetHeight - 64)
-    ) gameOver();
+       birdY+42 > game.clientHeight - p.bottom.offsetHeight - 70)
+    ){
+      gameOver();
+    }
   });
 
-  if(birdY < 0 || birdY > game.clientHeight - 100) gameOver();
+  if(birdY < 0 || birdY > game.clientHeight - 110) gameOver();
+
   requestAnimationFrame(loop);
 }
 
 function gameOver(){
   running = false;
-  overlay.style.display="flex";
+  overlay.style.display = "flex";
   overlay.innerHTML = `
     <div class="overlay-box">
       <h1>Game Over</h1>
